@@ -664,7 +664,7 @@ public final class FusionIo
         IonizeProc(Object currentOutputPort)
         {
             myCurrentOutputPort = (DynamicParameter) currentOutputPort;
-            myBuilder = IonTextWriterBuilder.pretty().immutable();
+            myBuilder = IonTextWriterBuilder.minimal().immutable();
         }
 
         @Override

@@ -60,7 +60,7 @@ class Version
         public int execute(PrintWriter out, PrintWriter err)
             throws IOException
         {
-            IonTextWriterBuilder b = IonTextWriterBuilder.pretty();
+            IonTextWriterBuilder b = IonTextWriterBuilder.minimal();
             b.setCharset(IonTextWriterBuilder.ASCII);
 
             IonWriter w = b.build(out);

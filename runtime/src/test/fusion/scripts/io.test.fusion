@@ -240,26 +240,28 @@
 // correctly unquoted inside a sexp regardless of what surrounds it.
 // Voids verify that write mode is maintained and does not escalate to ionize.
 
-// List context: operators inside a list must be quoted. Nested sexp inside
-// the list correctly unquotes its direct children.
-(check === "['+', ['+'], (+)]"
-  (with_output_to_string
-    (write (quote ['+', ['+'], (+)]))))
+//=============================================================================
+// write: context switching between sexp and non-sexp containers
+//
+// Verifies that the quoteOperators=false context set by a sexp does not
+// leak into nested lists, structs, or child sexps, and that operators are
+// correctly unquoted inside a sexp regardless of what surrounds it.
+// Voids verify that write mode is maintained and does not escalate to ionize.
 
-// Struct context: operator keys and values inside a struct must be quoted.
-// Nested sexp inside the struct correctly unquotes its direct children.
+// List context: nested sexp correctly unquotes its direct children but contains void.
+(check === "['+', ['+'], {'+':'+'}, (+ {{{void}}})]"
+  (with_output_to_string
+    (write (quote ['+', ['+'], {'+':'+'}, (+ (void))]))))
+
+// Struct context: multiple fields with same name, nested types, and voids.
 (check_pred
-  (|r| (or (=== "{f:'+',g:['+'],h:(+)}" r)
-           (=== "{f:'+',h:(+),g:['+']}" r)
-           (=== "{g:['+'],f:'+',h:(+)}" r)
-           (=== "{g:['+'],h:(+),f:'+'}" r)
-           (=== "{h:(+),f:'+',g:['+']}" r)
-           (=== "{h:(+),g:['+'],f:'+'}" r)))
+  (|r| (or (=== "{f:'+',f:['+'],f:(+ {{{void}}})}" r)
+           (=== "{f:['+'],f:'+',f:(+ {{{void}}})}" r)
+           (=== "{f:(+ {{{void}}}),f:'+',f:['+']}" r)))
   (with_output_to_string
-    (write (quote {f:'+', g:['+'], h:(+)}))))
+    (write (quote {f:'+', f:['+'], f:(+ (void)) }))))
 
-// Sexp context: operators unquoted as direct children, but nested lists and
-// structs revert to default quoting. Nested sexp also unquotes its children.
-(check === "(+ ['+'] {'+':(+)} (+))"
+// Sexp context: unquoted operators as direct children, complex nested types with voids.
+(check === "(+ ['+', {{{void}}}], {'+':'+', f::{{{void}}}}, (+ {{{void}}}), {{{void}}})"
   (with_output_to_string
-    (write (quote (+ ['+'] {'+':(+) } (+))))))
+    (write (quote (+ ['+', (void)], {'+':'+', f::(void)}, (+ (void)), (void))))))
